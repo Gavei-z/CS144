@@ -2,6 +2,7 @@
 #define SPONGE_LIBSPONGE_BYTE_STREAM_HH
 
 #include <string>
+#include <vector>
 
 //! \brief An in-order byte stream.
 
@@ -9,7 +10,7 @@
 //! side.  The byte stream is finite: the writer can end the input,
 //! and then no more bytes can be written.
 class ByteStream {
-  private:
+private:
     // Your code here -- add private members as necessary.
 
     // Hint: This doesn't need to be a sophisticated data structure at
@@ -17,9 +18,19 @@ class ByteStream {
     // that's a sign that you probably want to keep exploring
     // different approaches.
 
+    int _capacity;
+    std::vector<char> _byteStream{};
+    size_t _write_ptr = 0;
+    size_t _read_ptr = 0;
+    size_t _write_bytes_count = 0;
+    size_t _read_bytes_count = 0;
+    size_t _size = 0;
+    bool _input_end = false;
     bool _error{};  //!< Flag indicating that the stream suffered an error.
+    void next_write(size_t size) { _write_ptr = (_write_ptr + size) % _capacity; }
+    void next_read(size_t size) { _read_ptr = (_read_ptr + size) % _capacity; }
 
-  public:
+public:
     //! Construct a stream with room for `capacity` bytes.
     ByteStream(const size_t capacity);
 
