@@ -24,8 +24,7 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
     DUMMY_CODE(data, index, eof);
     // When the string is out of the `_capacity` or the end of the string
     // is before the `_start`, we should do NOTHING.
-    if (index >= _capacity + _start || _start > index + data.size())
-        return;
+    if (index >= _start + _capacity || _start > index + data.size()) return;
 
     // Here we should consider the situation that we shoud accept part of
     // the string, when `index < _start`. We should set the `actual_index`
