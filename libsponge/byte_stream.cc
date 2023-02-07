@@ -48,10 +48,10 @@ void ByteStream::pop_output(const size_t len) {
 //! \returns a string
 std::string ByteStream::read(const size_t len) {
     std::string str{};
-    if (eof()) {
-        set_error();
-        return str;
-    }
+//    if (eof()) {
+//        set_error();
+//        return str;
+//    }
     str = peek_output(len);
     pop_output(len);
     return str;
