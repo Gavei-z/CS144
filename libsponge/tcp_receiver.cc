@@ -13,46 +13,47 @@ using namespace std;
 void TCPReceiver::segment_received(const TCPSegment &seg) {
     /**
      * The first SYN is useful, the initial sequence number
-     * should be set after that.
+     * should be set.
      */
-    if (seg.header().syn && !_isn.has_value()) {
-//        _syn = true;
-        _isn.emplace(seg.header().seqno);
-//        _ack.emplace(_isn.value());
-    }
+    if (seg.header().syn )
+        _sender_isn.emplace(seg.header().seqno);
 
     /**
      * The function `bytes_written()` of the class `ByteStream` is always
      * pointing to the absolute current start window position. It is useful
      * when we push_substring(as the checkpoint).
+     *
+     * bytes_written() grows up from 1, but the index from 0.
      */
-    if (_isn.has_value()) {
+    if (_sender_isn.has_value()) {
         _reassembler.push_substring(
                 seg.payload().copy(),
-                unwrap(seg.header().seqno, _isn.value(), stream_out().bytes_written()),
+                unwrap(seg.header().seqno, _sender_isn.value(), stream_out().bytes_written()),
                 seg.header().fin
                 );
-        _ack.emplace(wrap(stream_out().bytes_written(), _isn.value()));
-    }
+        _ack.emplace(wrap(stream_out().bytes_written(), _sender_isn.value()));
 
-    /**
-     * The payload is empty when the first SYN comes, and `_ack` == `_isn`,
-     * we should deal with this situation.
-     */
-    if (!_syn && seg.header().syn && _ack.has_value()) {
-        _syn = true;
-        _ack.emplace(_ack.value() + 1);
-        _isn.emplace(_ack.value());
-    }
+        /**
+         * The payload is empty when the first SYN comes, and `_ack` == `_sender_isn`,
+         * we should deal with this situation.
+         */
+         if (seg.header().syn) {
+             _ack.emplace(_ack.value() + 1);
+             _sender_isn.emplace(_ack.value());
+         }
 
-    /**
-     * The connection was set up, the _fin == true, and all the bytes
-     * were written, `_ack` plus 1. Cause the receiver need the second FIN
-     * from the sender.
-     */
-    _fin = _fin ? _fin : seg.header().fin;
-    if (_isn.has_value() && _fin && _reassembler.stream_out().input_ended()) {
-        _ack = WrappingInt32(_ack.value() + 1);
+         /**
+          * Only if we set up the connection and all the bytes were written into
+          * the buffer in the `ByteStream`, we plus one to '_ack'.
+          *
+          * Because when closing the TCP connection, we receive the sender's seq number,
+          * because of no payload, our `_ack` is equal to `seg.header().seqno`
+          * Don't consider the sending, if we need the second FIN from the sender,
+          * we should plus one to the `_ack` thus receiving the second FIN.
+          */
+
+         if (stream_out().input_ended())
+             _ack = WrappingInt32(_ack.value() + 1);
     }
 
 }

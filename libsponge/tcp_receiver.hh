@@ -16,14 +16,10 @@
 class TCPReceiver {
     //! Our data structure for re-assembling bytes.
     StreamReassembler _reassembler;
-
     //! The maximum number of bytes we'll store.
     size_t _capacity;
-    uint64_t _recent_seq = 0;
-    bool _syn = false;
-    bool _fin = false;
-    std::optional<WrappingInt32> _isn{};
-    std::optional<WrappingInt32> _ack{};
+    std::optional<WrappingInt32> _sender_isn{};     //! The sender's Initial Sequence Number
+    std::optional<WrappingInt32> _ack{};            //! The acknowledge number
 
   public:
     //! \brief Construct a TCP receiver
@@ -58,7 +54,7 @@ class TCPReceiver {
     //! \brief number of bytes stored but not yet reassembled
     size_t unassembled_bytes() const { return _reassembler.unassembled_bytes(); }
 
-    //! \brief handle an inbound segment
+    //! \brief handle an inbound segment, inbound: 入站
     void segment_received(const TCPSegment &seg);
 
     //! \name "Output" interface for the reader

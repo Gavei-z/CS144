@@ -19,16 +19,16 @@ private:
     // different approaches.
 
     int _capacity;
-    std::vector<char> _byteStream{};
+    std::vector<char> ringBuffer{};
     size_t _write_ptr = 0;
     size_t _read_ptr = 0;
     size_t _write_bytes_count = 0;
     size_t _read_bytes_count = 0;
     size_t _size = 0;
     bool _input_end = false;
-    bool _error{};  //!< Flag indicating that the stream suffered an error.
-    void next_write(size_t size) { _write_ptr = (_write_ptr + size) % _capacity; }
-    void next_read(size_t size) { _read_ptr = (_read_ptr + size) % _capacity; }
+    bool _error = false;  //!< Flag indicating that the stream suffered an error.
+    void advance_write(size_t size) { _write_ptr = (_write_ptr + size) % _capacity; }
+    void advance_read(size_t size) { _read_ptr = (_read_ptr + size) % _capacity; }
 
 public:
     //! Construct a stream with room for `capacity` bytes.
