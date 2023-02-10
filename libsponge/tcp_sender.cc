@@ -24,7 +24,6 @@ void TCPSender::fill_window() {
     }
 
     TCPSegment segment{};
-
     // Special case: when the `_receiver_window_size` equals 0
     uint64_t window_size = _receiver_window_size == 0 ? 1 : _receiver_window_size;
 
@@ -57,21 +56,17 @@ void TCPSender::fill_window() {
     _outstanding_segments.push_back(segment);
     _retransmission_timer.start_timer();
 
-    if (window_not_full(window_size)) {
+    if (window_not_full(window_size))
         fill_window();
-    }
 }
 
 //! \param ackno The remote receiver's ackno (acknowledgment number)
 //! \param window_size The remote receiver's advertised window size
 void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_size) {
     // When receiving unneeded ack, just return.
-    if (unwrap(ackno, _isn, next_seqno_absolute()) > _next_seqno ||
-        unwrap(ackno, _isn, next_seqno_absolute()) < _receiver_ack) {
-        return;
-    }
-
     uint64_t absolute_ack = unwrap(ackno, _isn, next_seqno_absolute());
+    if (absolute_ack > _next_seqno || absolute_ack < _receiver_ack) return;
+
     _receiver_window_size = window_size;
     bool is_ack_update = false;
 
