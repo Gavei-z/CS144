@@ -54,7 +54,7 @@ bool TCPConnection::send_new_segments() {
 }
 
 void TCPConnection::send_rst_flag_segment() {
-    _sender.send_empty_segment();
+    _sender.send_empty_segment(); // push the empty segment into the streams_out
     TCPSegment segment = _sender.segments_out().front();
     _sender.segments_out().pop();
     set_ack_and_window(segment);
