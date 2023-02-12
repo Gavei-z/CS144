@@ -49,8 +49,6 @@ NetworkInterface::NetworkInterface(const EthernetAddress &ethernet_address, cons
     : _ethernet_address(ethernet_address), _ip_address(ip_address) {
     cerr << "DEBUG: Network interface has Ethernet address " << to_string(_ethernet_address) << " and IP address "
          << ip_address.ip() << "\n";
-
-
 }
 
 //! \param[in] dgram the IPv4 datagram to be sent
