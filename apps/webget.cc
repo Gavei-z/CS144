@@ -1,5 +1,6 @@
-#include "socket.hh"
+
 #include "util.hh"
+#include "tcp_sponge_socket.hh"
 
 #include <cstdlib>
 #include <iostream>
@@ -17,7 +18,7 @@ void get_URL(const string &host, const string &path) {
     // (not just one call to read() -- everything) until you reach
     // the "eof" (end of file).
 
-    TCPSocket tcpSocket{};
+    FullStackSocket tcpSocket{}; // Change this line to CS144TCPSocket tcpSocket{}; in lab4
     const Address addr(host, "http");
     const string request = "GET " + path + " HTTP/1.1\r\nHost: " + host + " \r\nConnection: close \r\n\r\n";
     tcpSocket.connect(addr);
