@@ -68,9 +68,12 @@ void NetworkInterface::send_datagram(const InternetDatagram &dgram, const Addres
         frames_out().push(ipv4_ethernet_frame);
     } else {
         // We do not allow ARP flood, add a rate limit
+
+        // if the `next_hop_ip` already exists, we query and check it
         if (blocked.find(next_hop_ip) != blocked.end() && blocked[next_hop_ip]._time <= 5000)
             return;
 
+        // otherwise we make a new `ARP` for it
         ARPMessage arp_message = create_arp_message(
                 _ip_address.ipv4_numeric(), _ethernet_address, next_hop_ip, {}, ARPMessage::OPCODE_REQUEST);
         EthernetFrame arp_ethernet_frame = new_ethernet_frame(EthernetHeader::TYPE_ARP,
@@ -93,7 +96,7 @@ optional<InternetDatagram> NetworkInterface::recv_frame(const EthernetFrame &fra
 
     optional<InternetDatagram> new_datagram{};
 
-    // We need to check whether the EthernetFrame is correct
+    // check the destination of EthernetFrame is mine (_ethernet_address or broadcast)
     if (frame.header().dst != _ethernet_address && frame.header().dst != ETHERNET_BROADCAST) {
         return new_datagram;
     }

@@ -27,7 +27,7 @@ bool TCPConnection::check_outbound_stream_ended_and_send_fin() {return _sender.s
 bool TCPConnection::check_outbound_fully_acknowledge() {return _sender.bytes_in_flight() == 0;}
 
 //! This function inspects the `_receiver`'s acknowledge number and window size. Meantime,
-//! is updates the corresponding fields of itself
+//! it updates the corresponding fields of itself
 void TCPConnection::set_ack_and_window(TCPSegment &seg) {
     if (_receiver.ackno().has_value()) {
         seg.header().ack = true;
@@ -100,10 +100,11 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
         send_new_segments();
     }
 
+    // we need to handle the situation with no payload.
     if (seg.length_in_sequence_space() > 0) {
         _sender.fill_window();
         if (!send_new_segments()) {
-            _sender.send_empty_segment();
+            _sender.send_empty_segment();           // keep alive
             TCPSegment segment = _sender.segments_out().front();
             _sender.segments_out().pop();
             set_ack_and_window(segment);
